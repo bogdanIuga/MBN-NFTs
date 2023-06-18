@@ -1,6 +1,5 @@
 const express = require("express");
 const { ethers } = require("ethers");
-const { abi } = require("./abi.json");
 const app = express();
 app.use(express.json());
 
@@ -15,14 +14,16 @@ const allowlistedAddresses = [
 
 const privateKey =
 	"0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
-const signer = new ethers.Wallet(privateKey);
+// const signer = new ethers.Wallet(privateKey);
 
-const PROVIDER_URL = "";
+const PROVIDER_URL =
+	"wss://eth-sepolia.g.alchemy.com/v2/Fp4JVHrqG8xP8RCV45u-D-AlL1ZixFRw";
 
-const provider = new ethers.providers.JsonRpcProvider(PROVIDER_URL);
-const contractABI = "";
-const contractAddress = "";
-const contract = new ethers.Contract(contractAddress, contractABI, provider);
+const provider = new ethers.WebSocketProvider(PROVIDER_URL);
+const signer = provider.getSigner();
+const contractABI = require("./abi.json");
+const contractAddress = "0xa41794eC4084Fa6335dB25F2C3C1afda0687a56C";
+const contract = new ethers.Contract(contractAddress, contractABI, signer);
 
 app.post("/check-address", async (req, res) => {
 	const { address } = req.body;
@@ -50,18 +51,10 @@ app.post("/check-address", async (req, res) => {
 
 const port = process.env.PORT || 3000;
 
-contract.events.Minted((error, event) => {
-	if (error) {
-		console.error("Error on event", error);
-		return;
-	}
-
-	console.log(
-		"totalPublicMint changed:",
-		event.returnValues.msg.sender,
-		": ",
-		event.returnValues._quantity
-	);
+contract.on("Minted", (minter, quantity, event) => {
+	console.log("Minter: ", minter);
+	console.log("Quantity: ", quantity.toString());
+	console.log("Event: ", event);
 });
 
 async function getTotalPublicMint() {
