@@ -14,16 +14,16 @@ const allowlistedAddresses = [
 
 const privateKey =
 	"0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
-// const signer = new ethers.Wallet(privateKey);
+const signer = new ethers.Wallet(privateKey);
 
 const PROVIDER_URL =
 	"wss://eth-sepolia.g.alchemy.com/v2/Fp4JVHrqG8xP8RCV45u-D-AlL1ZixFRw";
 
 const provider = new ethers.WebSocketProvider(PROVIDER_URL);
-const signer = provider.getSigner();
+// const signer = provider.getSigner();
 const contractABI = require("./abi.json");
 const contractAddress = "0xa41794eC4084Fa6335dB25F2C3C1afda0687a56C";
-const contract = new ethers.Contract(contractAddress, contractABI, signer);
+const contract = new ethers.Contract(contractAddress, contractABI, provider);
 
 app.post("/check-address", async (req, res) => {
 	const { address } = req.body;
@@ -57,13 +57,20 @@ contract.on("Minted", (minter, quantity, event) => {
 	console.log("Event: ", event);
 });
 
-async function getTotalPublicMint() {
-	const totalPublicMint = await contract.totalPublicMint();
-	console.log("totalPublicMint: ", totalPublicMint.toString());
+async function syncTotalPublicMint() {
+	const lastProcessedBlock = 0;
+	const eventFilter = contract.filters.Minted();
+	const events = await contract.queryFilter(
+		eventFilter,
+		lastProcessedBlock + 1
+	);
+
+	for (let event of events) {
+		console.log(event);
+	}
 }
 
-// first sync mint
-getTotalPublicMint().then(() => {
+syncTotalPublicMint().then(() => {
 	app.listen(port, () => {
 		console.log(`Server is running on port ${port}`);
 	});
