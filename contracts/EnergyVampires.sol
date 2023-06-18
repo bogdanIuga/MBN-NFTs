@@ -87,7 +87,7 @@ contract EnergyVampires is ERC721A, Ownable {
         );
         require(
             recoverSigner(hash, signature) == owner(),
-            "Address is not allowlisted"
+            "Energy Vampires :: Address is not allowlisted"
         );
 
         totalWhitelistMint[msg.sender] += _quantity;
