@@ -23,7 +23,7 @@ contract EnergyVampires is ERC721A, Ownable {
     uint256 public constant MAX_WHITELIST_MINT = 3;
     uint256 public constant PUBLIC_SALE_PRICE = .099 ether;
     uint256 public constant WHITELIST_SALE_PRICE = .0799 ether;
-    uint256 puvlic constant tokensPerNFT = 1;
+    uint256 public constant tokensPerNFT = 1;
 
     string private baseTokenUri;
     string public placeholderTokenUri;
