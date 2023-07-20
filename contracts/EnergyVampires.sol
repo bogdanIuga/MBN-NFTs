@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "erc721a/contracts/ERC721A.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract EnergyVampires is ERC721A, Ownable {
     using Strings for uint256;
@@ -22,6 +23,7 @@ contract EnergyVampires is ERC721A, Ownable {
     uint256 public constant MAX_WHITELIST_MINT = 3;
     uint256 public constant PUBLIC_SALE_PRICE = .099 ether;
     uint256 public constant WHITELIST_SALE_PRICE = .0799 ether;
+    uint256 puvlic constant tokensPerNFT = 1;
 
     string private baseTokenUri;
     string public placeholderTokenUri;
@@ -35,6 +37,8 @@ contract EnergyVampires is ERC721A, Ownable {
 
     mapping(address => uint256) public totalPublicMint;
     mapping(address => uint256) public totalWhitelistMint;
+
+    IERC20 public tokenContract;
 
     constructor() ERC721A("Energy Vampires", "ENVAMP") {}
 
@@ -173,5 +177,17 @@ contract EnergyVampires is ERC721A, Ownable {
         isRevealed = !isRevealed;
 
         emit RevealToggled(isRevealed);
+    }
+
+    function setTokenContract(address _tokenContract) external onlyOwner {
+        tokenContract = IERC20(_tokenContract);
+    }
+
+    function claimReward(address walletAddress, uint256 amount) external onlyOwner {
+        require(_exists(tokenId), "Energy Vampires :: NFT does not exist!");
+
+        uint256 tokensToSend = amount * tokensPerNFT;
+
+        tokenContract.transfer(walletAddress, tokensToSend);
     }
 }
